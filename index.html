@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="paper">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Totgo · 专注力训练</title>
+<link rel="icon" href="assets/icon.ico" type="image/x-icon">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">Totgo<span class="brand-mark"></span></div>
+    <div class="topbar-right">
+      <div class="global-clock" title="今日有效训练时长（关卡内实时计入）">
+        <span class="label">今日有效训练时长</span>
+        <span id="global-time" class="mono">00:00.00</span>
+      </div>
+      <div class="topbar-actions">
+        <button id="btn-export" class="text-btn top-link" type="button" title="把本机训练数据导出为 JSON 备份">导出数据</button>
+        <button id="btn-import" class="text-btn top-link" type="button" title="从 JSON 备份恢复本机数据">导入数据</button>
+        <input id="import-file" type="file" accept=".json,application/json" hidden>
+        <button id="theme-toggle" class="icon-btn" type="button" aria-label="切换纸白 / 墨黑主题" title="切换纸白 / 墨黑主题">◐</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main id="view-home" class="view">
+  <section class="hero">
+    <p class="eyebrow">A QUIET PLACE FOR ATTENTION</p>
+    <h1>把注意力，<br>放回此刻。</h1>
+  </section>
+
+  <section class="metrics" aria-label="训练数据">
+    <div class="metric">
+      <span class="metric-label">今日有效训练时长</span>
+      <span id="today-time" class="metric-value mono">00:00.00</span>
+    </div>
+    <div class="metric">
+      <span class="metric-label">历史累计训练时长</span>
+      <span id="total-time" class="metric-value mono">00:00.00</span>
+    </div>
+    <div class="metric">
+      <span class="metric-label">累计练习次数</span>
+      <span id="total-count" class="metric-value mono">0</span>
+    </div>
+  </section>
+
+  <section class="sections">
+    <div class="section-head">
+      <h2>练习</h2>
+    </div>
+    <div id="module-grid" class="module-grid"></div>
+  </section>
+
+  <section class="history" aria-label="近期训练日志">
+    <div class="section-head">
+      <h2>近期训练日志</h2>
+      <button id="btn-clear-history" class="text-btn clear-btn" type="button" title="清空日志、最佳成绩与练习次数；累计时长保留">清空记录</button>
+    </div>
+    <div class="history-wrap">
+      <table id="history-table" class="history-table" hidden>
+        <thead>
+          <tr>
+            <th>时间</th><th>板块</th><th>难度</th><th>状态</th><th>消耗时长</th><th>有效点击率</th>
+          </tr>
+        </thead>
+        <tbody id="history-body"></tbody>
+      </table>
+      <p id="history-empty" class="history-empty">还没有训练记录。完成或退出一次练习后，这里会安静地记下。</p>
+    </div>
+    <p class="history-note">最多保留最近 100 条 · 仅存于本机 · 清空不影响累计时长，也不会改动主题与难度设置 · 建议定期用顶栏「导出数据」备份</p>
+  </section>
+
+  <footer class="footer">
+    <span id="footer-brand">Tot · 纯单机 · 零联网请求 · 数据仅存于本机浏览器</span>
+    <span id="footer-version">v1.0 · © Tot</span>
+  </footer>
+</main>
+
+<main id="view-level" class="view" hidden>
+  <div class="level-bar">
+    <div class="level-title">
+      <span id="level-index" class="mono">01</span>
+      <span class="level-sep"></span>
+      <span id="level-name">—</span>
+    </div>
+    <div class="level-right">
+      <div class="level-clock">
+        <span class="label">本关</span>
+        <span id="level-time" class="mono">00:00.00</span>
+      </div>
+      <div class="level-actions">
+        <button id="btn-pause" class="level-btn" type="button">暂歇 / 空格</button>
+        <button id="btn-abort" class="level-btn level-btn-quiet" type="button">提前结束</button>
+      </div>
+    </div>
+  </div>
+  <div class="level-progress"><i id="level-progress-fill"></i></div>
+  <p id="level-hint" class="level-hint">准备</p>
+  <p id="level-keyhint" class="level-keyhint mono" hidden></p>
+  <div id="level-stage" class="level-stage"></div>
+  <div class="level-foot">
+    <span id="level-stat" class="mono">—</span>
+    <span class="foot-tip">切屏自动挂起</span>
+  </div>
+</main>
+
+<div id="suspend-overlay" class="overlay" hidden>
+  <div class="suspend-card">
+    <p class="eyebrow">PAUSED</p>
+    <h2>暂歇</h2>
+    <p>时间与画面已静止。<br>按空格、Esc 或点「继续」，回到训练。</p>
+    <button id="btn-resume" class="wide-btn" type="button">继续</button>
+    <button id="btn-abort-pause" class="wide-btn quiet-btn" type="button">提前结束</button>
+  </div>
+</div>
+
+<div id="settle-overlay" class="overlay" hidden>
+  <div class="settle-card" id="settle-card" role="dialog" aria-modal="true" aria-labelledby="settle-title">
+    <p id="settle-kicker" class="eyebrow">SESSION · 结算</p>
+    <h2 id="settle-title">完成</h2>
+    <p id="settle-sub" class="settle-sub">—</p>
+    <div class="settle-grid">
+      <div class="settle-item">
+        <span class="settle-label">消耗时长</span>
+        <span id="settle-time" class="settle-value mono">00:00.00</span>
+      </div>
+      <div class="settle-item">
+        <span class="settle-label">有效点击率</span>
+        <span id="settle-acc" class="settle-value mono">—</span>
+      </div>
+      <div class="settle-item">
+        <span class="settle-label">失误惩罚次数</span>
+        <span id="settle-penalty" class="settle-value mono">0</span>
+      </div>
+      <div class="settle-item">
+        <span class="settle-label">完成百分比</span>
+        <span id="settle-progress" class="settle-value mono">0%</span>
+      </div>
+    </div>
+    <div class="settle-meta">
+      <span id="settle-module">—</span>
+      <span id="settle-detail">—</span>
+    </div>
+    <div class="settle-actions">
+      <button id="btn-retry" class="wide-btn" type="button" hidden>再试一次</button>
+      <button id="btn-home" class="wide-btn" type="button">回到案前</button>
+    </div>
+  </div>
+</div>
+
+<script src="core/totgo-core.js"></script>
+<script src="modules/mot.js"></script>
+<script src="modules/schulte.js"></script>
+<script src="modules/stroop.js"></script>
+<script src="modules/breath.js"></script>
+<script>Totgo.boot();</script>
+</body>
+</html>

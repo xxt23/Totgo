@@ -1,0 +1,53 @@
+{
+  "name": "totgo",
+  "version": "1.0.0",
+  "description": "Totgo - 纯单机专注力训练小游戏",
+  "productName": "Totgo",
+  "main": "main.js",
+  "author": "Tot",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder --win portable --x64"
+  },
+  "devDependencies": {
+    "electron": "33.4.11",
+    "electron-builder": "25.1.8",
+    "misans": "^4.0.0"
+  },
+  "build": {
+    "appId": "com.totgo.desktop",
+    "productName": "Totgo",
+    "copyright": "Tot",
+    "icon": "assets/icon.ico",
+    "asar": false,
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.js",
+      "index.html",
+      "package.json",
+      "assets/**/*",
+      "core/**/*",
+      "modules/**/*"
+    ],
+    "win": {
+      "icon": "assets/icon.ico",
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "portable": {
+      "artifactName": "Totgo-v1.0-portable.${ext}"
+    }
+  }
+}
